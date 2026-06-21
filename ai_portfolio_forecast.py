@@ -1,14 +1,9 @@
-# -*- coding: utf-8 -*-
 
 import os
 import warnings
 import datetime
 import requests
 from postgres_storage import DatabaseUnavailable, ForecastRepository
-
-warnings.filterwarnings("ignore")
-os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "2")
-os.environ.setdefault("TF_ENABLE_ONEDNN_OPTS", "0")
 
 import numpy as np
 import pandas as pd
@@ -39,16 +34,6 @@ except Exception:
 print("[DEBUG] ЗАГРУЖЕН ai_portfolio_forecast.py:", __file__)
 
 
-# ============================================================
-# НАСТРОЙКА ПРОГНОЗА
-# Сейчас прогноз строится на 3 торговых дня.
-#
-# Для прогноза на 4 дня:
-# FORECAST_DAYS = 4
-#
-# Для прогноза на 5 дней:
-# FORECAST_DAYS = 5
-# ============================================================
 
 FORECAST_DAYS = 30
 TARGET_COL = f"target_return_{FORECAST_DAYS}"
@@ -95,10 +80,6 @@ def _save_forecast_results(forecast_type, results):
     except Exception as e:
         print(f"[FORECAST] Ошибка сохранения прогноза в PostgreSQL: {e}")
 
-
-# ============================================================
-# ЗАГРУЗКА ДАННЫХ MOEX
-# ============================================================
 
 def _request_moex_json(url, params=None, timeout=15):
     try:
@@ -181,12 +162,6 @@ def _load_moex_candles_board(ticker, board, days=900, limit=1600):
 
 
 def _load_full_candles(ticker, days=900, limit=1600):
-    """
-    Загружает исторические свечи для обучения модели.
-    Важно: пробуем несколько board, потому что у разных бумаг MOEX данные
-    могут лежать не только на TQBR.
-    """
-
     ticker = str(ticker).upper().strip()
 
     boards = ["TQBR", "TQTF"]
@@ -222,13 +197,6 @@ def _load_full_candles(ticker, days=900, limit=1600):
 
 
 def _safe_dashboard_price(ticker):
-    """
-    Берёт текущую цену так же, как в dashboard.py:
-    через последние дневные свечи MOEX за последние 45 дней.
-
-    Это значение выводится в окне AI-прогноза как «Текущая».
-    """
-
     ticker = str(ticker).upper().strip()
 
     end_date = datetime.date.today()
@@ -287,10 +255,6 @@ def _safe_dashboard_price(ticker):
     return None
 
 
-# ============================================================
-# ПРИЗНАКИ
-# ============================================================
-
 def _to_float_series(series):
     return pd.to_numeric(series, errors="coerce").astype(float)
 
@@ -324,11 +288,6 @@ def _feature_columns(df):
 
 
 def _prepare_features(df):
-    """
-    Готовит признаки для модели.
-    Целевая переменная считается на FORECAST_DAYS торговых дней.
-    """
-
     df = df.copy()
 
     required = ["open", "high", "low", "close", "volume"]
@@ -392,10 +351,6 @@ def _prepare_features(df):
 
     return df
 
-
-# ============================================================
-# МОДЕЛИ
-# ============================================================
 
 def _fit_fast_ensemble(X_train, y_train):
     models = [
@@ -585,11 +540,6 @@ def _lstm_return_forecast(df_train, df_features, feature_cols):
         print(f"[FORECAST] Ошибка LSTM: {e}")
         return None
 
-
-# ============================================================
-# ПОНЯТНОЕ ОПИСАНИЕ ДЛЯ ПОДБОРКИ
-# ============================================================
-
 def _format_direction(change_percent):
     if change_percent > 0:
         return f"рост на {change_percent:.2f}%"
@@ -736,7 +686,7 @@ def _plain_reason(
             f"с {current_price:.2f} ₽ до {predicted_price:.2f} ₽."
         )
         decision = (
-            "Простыми словами: по расчёту цена может немного вырасти, "
+            "По расчёту цена может немного вырасти, "
             "поэтому бумага попала в подборку."
         )
 
@@ -747,7 +697,7 @@ def _plain_reason(
             f"с {current_price:.2f} ₽ до {predicted_price:.2f} ₽."
         )
         decision = (
-            "Простыми словами: потенциал роста есть, но он небольшой. "
+            "потенциал роста есть, но он небольшой. "
             "Покупку лучше рассматривать осторожно."
         )
 
@@ -758,7 +708,7 @@ def _plain_reason(
             f"с {current_price:.2f} ₽ до {predicted_price:.2f} ₽."
         )
         decision = (
-            "Простыми словами: модель видит риск снижения цены, "
+            "модель видит риск снижения цены, "
             "поэтому входить в покупку сейчас опаснее."
         )
 
@@ -769,7 +719,7 @@ def _plain_reason(
             f"за ближайшие {FORECAST_DAYS} торговых дня."
         )
         decision = (
-            "Простыми словами: ожидаемое изменение слишком маленькое, "
+            "ожидаемое изменение слишком маленькое, "
             "поэтому лучше подождать более понятного сигнала."
         )
 
@@ -806,14 +756,11 @@ def _plain_reason(
     )
 
 
-# ============================================================
-# ОСНОВНОЙ ПРОГНОЗ
-# ============================================================
 
 def forecast_ticker(ticker, use_lstm=True):
     ticker = str(ticker).upper().strip()
 
-    print(f"\n[FORECAST] ========== Начинаю прогноз для {ticker} ==========")
+    print(f"\n[FORECAST] Начинаю прогноз для {ticker} ")
 
     df_raw = _load_full_candles(
         ticker=ticker,
@@ -970,11 +917,6 @@ def make_recommendation(change_percent, confidence=50):
 
 
 def forecast_portfolio_month(portfolio):
-    """
-    Название функции оставлено старым, потому что её вызывает portfolio.py.
-    Фактически прогноз строится на FORECAST_DAYS торговых дня.
-    """
-
     results = []
 
     if not isinstance(portfolio, list):
