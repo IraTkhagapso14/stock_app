@@ -1,6 +1,3 @@
-# screens/portfolio.py
-# -*- coding: utf-8 -*-
-
 import os
 import sys
 import threading
@@ -79,7 +76,7 @@ class PortfolioPage(tk.Frame):
 
         tk.Button(
             top_actions,
-            text="🧠 AI‑прогноз (30 дней)",
+            text="🧠 AI‑прогноз (4 дня)",
             command=self._run_forecast_async,
             bg=GREEN,
             fg=WHITE,
@@ -352,7 +349,7 @@ class PortfolioPage(tk.Frame):
                 tags=("normal",)
             )
 
-        # Общий итог после всех акций
+        
         self.tree.insert(
             "",
             "end",
@@ -411,11 +408,6 @@ class PortfolioPage(tk.Frame):
         self._refresh_profile_stats()
 
     def _refresh_dashboard_hero(self):
-        """
-        Обновляет сумму портфеля в верхнем блоке дашборда.
-        Без этого после +, − или удаления позиция в таблице меняется,
-        а сумма сверху может оставаться старой до перезапуска/перерисовки окна.
-        """
         try:
             if hasattr(self.dashboard, "refresh_hero"):
                 self.dashboard.refresh_hero()
@@ -425,10 +417,6 @@ class PortfolioPage(tk.Frame):
             pass
 
     def _refresh_profile_stats(self):
-        """
-        Обновляет блок профиля, чтобы поле «Вложено» сразу подтягивало
-        изменения после добавления, удаления или изменения количества акций.
-        """
         try:
             pages = getattr(self.dashboard, "pages", {})
             profile_page = pages.get("profile")
@@ -513,7 +501,7 @@ class PortfolioPage(tk.Frame):
 
         tk.Label(
             loading,
-            text="Строится AI‑прогноз на месяц (30 дней)",
+            text="Строится AI‑прогноз на 4 дня",
             font=("Helvetica", 13, "bold"),
             bg=BG,
             fg=TEXT_PRI
@@ -523,7 +511,7 @@ class PortfolioPage(tk.Frame):
             loading,
             text=(
                 "Загружаются данные по акциям, рассчитываются показатели\n"
-                "и обучается модель прогнозирования на месяц вперед (30 дней).\n\n"
+                "и обучается модель прогнозирования на 4 торговых дня.\n\n"
                 "Построение прогноза может занять несколько минут."
             ),
             font=("Helvetica", 10),
@@ -576,7 +564,7 @@ class PortfolioPage(tk.Frame):
             pass
 
         window = tk.Toplevel(self)
-        window.title("Общий прогноз портфеля на месяц")
+        window.title("Общий прогноз портфеля на 4 дня")
         window.geometry("1280x760")
         window.configure(bg=BG)
         window.minsize(1120, 640)
@@ -591,7 +579,7 @@ class PortfolioPage(tk.Frame):
 
         tk.Label(
             header,
-            text="Общий прогноз портфеля на месяц (30 дней)",
+            text="Общий прогноз портфеля на 4 дня",
             font=("Helvetica", 18, "bold"),
             bg=BG,
             fg=TEXT_PRI
@@ -639,7 +627,7 @@ class PortfolioPage(tk.Frame):
             "current": "Текущая",
             "forecast": "Прогноз",
             "growth": "Рост/падение",
-            "forecast_value": "Стоимость через 30 дней",
+            "forecast_value": "Стоимость через 4 дня",
             "profit": "Потенц. прибыль",
             "rec": "Решение"
         }
@@ -819,7 +807,7 @@ class PortfolioPage(tk.Frame):
             f"Вложено: {money(total_invested)}  |  "
             f"Текущая стоимость: {money(total_current)}  |  "
             f"Прибыль/убыток сейчас: {sign_now}{money(profit_now)} ({sign_now}{pct_now:.2f}%)\n"
-            f"Прогноз через 30 дней: {money(total_predicted)}  |  "
+            f"Прогноз через 4 дня: {money(total_predicted)}  |  "
             f"Прибыль/убыток по прогнозу: {sign_forecast}{money(profit_forecast)} ({sign_forecast}{pct_forecast:.2f}%)  |  "
             f"Изменение к текущей стоимости: {sign_delta}{money(delta_from_current)} ({sign_delta}{pct_from_current:.2f}%)"
         )
