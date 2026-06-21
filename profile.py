@@ -1,6 +1,3 @@
-# screens/profile.py
-# -*- coding: utf-8 -*-
-
 import tkinter as tk
 from tkinter import messagebox
 
@@ -335,11 +332,6 @@ class ProfilePage(tk.Frame):
                     root.quit()
 
     def refresh_all(self):
-        """
-        Перерисовывает профиль при каждом переходе на вкладку.
-        Поэтому блок «Вложено» сразу подтягивает изменения из портфеля
-        после добавления, удаления или изменения количества акций.
-        """
         self._ensure_profile_structure()
         self._build_ui()
 
